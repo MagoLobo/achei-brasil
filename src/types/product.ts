@@ -1,10 +1,4 @@
-export type Store =
-  | "TikTok Shop"
-  | "Mercado Livre"
-  | "Shopee"
-  | "SHEIN"
-  | "Magazine Luiza"
-  | "Boticário";
+export type Store = string;
 
 export type Product = {
   id: string;
