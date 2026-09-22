@@ -11,6 +11,7 @@ const DEFAULT_STORES: Store[] = [
   "SHEIN",
   "Magazine Luiza",
   "Boticário",
+  "Mercadoria",
 ];
 
 function loadStores(): Store[] {
