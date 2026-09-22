@@ -168,18 +168,17 @@ function App() {
                 onClick={() => setSelectedStore(store)}
               >
                 <span className="store-icon">
-                    ? "✨"
-                    : store === "TikTok Shop"
-                      ? "🎵"
-                      : store === "Mercado Livre"
-                        ? "🛒"
-                        : store === "Shopee"
-                          ? "🧡"
-                          : store === "SHEIN"
-                            ? "👗"
-                            : store === "Magazine Luiza"
-                              ? "💙"
-                              : "🌸"
+                  {store === "TikTok Shop"
+                    ? "🎵"
+                    : store === "Mercado Livre"
+                      ? "🛒"
+                      : store === "Shopee"
+                        ? "🧡"
+                        : store === "SHEIN"
+                          ? "👗"
+                          : store === "Magazine Luiza"
+                            ? "💙"
+                            : "🌸"}
                 </span>
                 {store}
               </button>

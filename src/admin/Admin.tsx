@@ -1,19 +1,31 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { Product, Store } from "../types/product";
 import { loadProducts, saveProducts } from "../data/productStore";
 import "./Admin.css";
 
-const stores: Store[] = [
-  "TikTok Shop",
-  "Mercado Livre",
-  "Shopee",
-  "SHEIN",
-  "Magazine Luiza",
-  "Boticário",
-];
-
 function Admin() {
   const [products, setProducts] = useState<Product[]>(loadProducts);
+
+  const [stores, setStores] = useState<Store[]>(() => {
+    const saved = localStorage.getItem("achei-brasil-stores");
+
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        // usa a lista padrão abaixo
+      }
+    }
+
+    return [
+      "TikTok Shop",
+      "Mercado Livre",
+      "Shopee",
+      "SHEIN",
+      "Magazine Luiza",
+      "Boticário",
+    ];
+  });
 
   const [form, setForm] = useState<Product>({
     id: "",
@@ -29,6 +41,51 @@ function Admin() {
   });
 
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageFile = (file?: File) => {
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Selecione um arquivo de imagem.");
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      setForm((current) => ({
+        ...current,
+        image: String(reader.result || ""),
+      }));
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  const addStore = () => {
+    const name = window.prompt("Nome da nova loja:");
+
+    if (!name?.trim()) return;
+
+    const storeName = name.trim();
+
+    if (stores.some((store) => store.toLowerCase() === storeName.toLowerCase())) {
+      alert("Esta loja já está cadastrada.");
+      return;
+    }
+
+    const nextStores = [...stores, storeName];
+    setStores(nextStores);
+    localStorage.setItem("achei-brasil-stores", JSON.stringify(nextStores));
+
+    setForm((current) => ({
+      ...current,
+      store: storeName as Store,
+    }));
+  };
 
   const updateProducts = (nextProducts: Product[]) => {
     setProducts(nextProducts);
@@ -131,22 +188,32 @@ function Admin() {
               />
             </label>
 
-            <label>
-              Loja
-              <select
-                value={form.store}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    store: e.target.value as Store,
-                  })
-                }
+            <div className="store-field">
+              <label>
+                Loja
+                <select
+                  value={form.store}
+                  onChange={(e) =>
+                    setForm({
+                      ...form,
+                      store: e.target.value as Store,
+                    })
+                  }
+                >
+                  {stores.map((store) => (
+                    <option key={store}>{store}</option>
+                  ))}
+                </select>
+              </label>
+
+              <button
+                type="button"
+                className="new-store-button"
+                onClick={addStore}
               >
-                {stores.map((store) => (
-                  <option key={store}>{store}</option>
-                ))}
-              </select>
-            </label>
+                ＋ NOVA LOJA
+              </button>
+            </div>
 
             <label>
               Categoria
@@ -183,16 +250,64 @@ function Admin() {
               </label>
             </div>
 
-            <label>
-              URL da imagem
+            <div className="image-upload">
+              <span>Imagem do produto</span>
+
+              <div className="image-upload-buttons">
+                <button
+                  type="button"
+                  className="image-upload-button"
+                  onClick={() => galleryInputRef.current?.click()}
+                >
+                  🖼️ GALERIA
+                </button>
+
+                <button
+                  type="button"
+                  className="image-upload-button"
+                  onClick={() => cameraInputRef.current?.click()}
+                >
+                  📷 CÂMERA
+                </button>
+              </div>
+
               <input
-                value={form.image}
-                onChange={(e) =>
-                  setForm({ ...form, image: e.target.value })
-                }
-                placeholder="https://..."
+                ref={galleryInputRef}
+                className="hidden-file-input"
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  handleImageFile(e.target.files?.[0]);
+                  e.currentTarget.value = "";
+                }}
               />
-            </label>
+
+              <input
+                ref={cameraInputRef}
+                className="hidden-file-input"
+                type="file"
+                accept="image/*"
+                capture="environment"
+                onChange={(e) => {
+                  handleImageFile(e.target.files?.[0]);
+                  e.currentTarget.value = "";
+                }}
+              />
+
+              {form.image && (
+                <div className="image-preview">
+                  <img src={form.image} alt="Prévia do produto" />
+
+                  <button
+                    type="button"
+                    className="remove-image"
+                    onClick={() => setForm({ ...form, image: "" })}
+                  >
+                    🗑️
+                  </button>
+                </div>
+              )}
+            </div>
 
             <label>
               Link de afiliado
