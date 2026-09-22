@@ -4,7 +4,7 @@ import type { Product, Store } from "./types/product";
 import { loadProducts } from "./data/productStore";
 import Admin from "./admin/Admin";
 
-const stores: Store[] = [
+const DEFAULT_STORES: Store[] = [
   "TikTok Shop",
   "Mercado Livre",
   "Shopee",
@@ -12,6 +12,29 @@ const stores: Store[] = [
   "Magazine Luiza",
   "Boticário",
 ];
+
+function loadStores(): Store[] {
+  try {
+    const saved = localStorage.getItem("achei-brasil-stores");
+
+    if (!saved) {
+      return DEFAULT_STORES;
+    }
+
+    const parsed = JSON.parse(saved);
+
+    if (!Array.isArray(parsed)) {
+      return DEFAULT_STORES;
+    }
+
+    return parsed.filter(
+      (store): store is Store =>
+        typeof store === "string" && store.trim().length > 0
+    );
+  } catch {
+    return DEFAULT_STORES;
+  }
+}
 
 
 
@@ -44,6 +67,7 @@ function App() {
   }
 
   const [slide, setSlide] = useState(0);
+  const [stores] = useState<Store[]>(loadStores);
   const [products] = useState<Product[]>(loadProducts);
   const [selectedStore, setSelectedStore] = useState<Store | "Todas">("Todas");
   const [search, setSearch] = useState("");
